@@ -1,20 +1,9 @@
 {
   "compilerOptions": {
     "lib": [
-      "dom",
-      "es2015"
+      "es2015",
+      "DOM"
     ],
-    "baseUrl": ".",
-    "paths": {
-      "*": [
-        "*"
-      ],
-      "@tippy.js": [
-        "node_modules/tippy.js/index.js",
-        "mytypes/tippy.js/index.d.ts"
-      ]
-    },
-    "moduleResolution": "node",
     "target": "es5",
     "module": "commonjs",
     "sourceMap": true,
@@ -23,10 +12,10 @@
     // 到達できないコード
     "allowUnusedLabels": false,
     // 到達できないラベル
-    "noImplicitReturns": true,
     // すべてのケースで戻り値を返す
     //        "noUnusedLocals": true, // 未使用変数
     //        "noUnusedParameters": true,   // 未使用引数
+    "noImplicitReturns": true,
     "pretty": true,
     // エラーの表示を色付きにする
     "noEmitHelpers": true,

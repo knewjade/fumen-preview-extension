@@ -1,17 +1,22 @@
 declare module 'tippy.js' {
-    interface Tip {
+    export interface Tip {
         loading: boolean;
     }
 
-    interface Option {
-        arrow: boolean;
-        placement: 'top' | 'bottom' | 'left' | 'right' | 'top-start' | 'top-end';
-        html: false | string | Element;
-        onShow: (this: HTMLElement, instance: any) => void;
-        onHidden: (this: HTMLElement, instance: any) => void;
-        popperOptions: object;
+    export interface Option {
+        arrow?: boolean;
+        placement?: 'top' | 'bottom' | 'left' | 'right' | 'top-start' | 'top-end';
+        html?: false | string | Element;
+        onShow?: (this: HTMLElement, instance: Instance) => void;
+        onHide?: (this: HTMLElement, instance: Instance) => void;
+        onHidden?: (this: HTMLElement, instance: Instance) => void;
+        popperOptions?: object;
     }
 
-    const tippy: (selector: string | Element | NodeList, option?: Option) => Tip;
+    export interface Instance {
+        reference: Element;
+    }
+
+    const tippy: (selector: string | Element | NodeList | Node[], option?: Option) => Tip;
     export default tippy;
 }

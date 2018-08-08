@@ -11,5 +11,6 @@ module.exports = {
         "json",
         "node"
     ],
-    roots: ["<rootDir>/src/"]
+    testURL: "http://localhost/",
+    roots: ["<rootDir>/src/"],
 };
