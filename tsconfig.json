@@ -1,0 +1,39 @@
+{
+  "compilerOptions": {
+    "lib": [
+      "dom",
+      "es2015"
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "*": [
+        "*"
+      ],
+      "@tippy.js": [
+        "node_modules/tippy.js/index.js",
+        "mytypes/tippy.js/index.d.ts"
+      ]
+    },
+    "moduleResolution": "node",
+    "target": "es5",
+    "module": "commonjs",
+    "sourceMap": true,
+    "strict": true,
+    "allowUnreachableCode": false,
+    // 到達できないコード
+    "allowUnusedLabels": false,
+    // 到達できないラベル
+    "noImplicitReturns": true,
+    // すべてのケースで戻り値を返す
+    //        "noUnusedLocals": true, // 未使用変数
+    //        "noUnusedParameters": true,   // 未使用引数
+    "pretty": true,
+    // エラーの表示を色付きにする
+    "noEmitHelpers": true,
+    // ヘルパ関数のglobal化
+    "importHelpers": true,
+    // ヘルパ関数としてtslibをimport
+    "esModuleInterop": true
+    // import * + 関数呼び出し をエラーにする
+  }
+}

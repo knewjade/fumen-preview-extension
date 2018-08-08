@@ -1,0 +1,7 @@
+node_modules/
+.idea/
+yarn-*.log
+src/**/*.js
+src/**/*.js.map
+extention/*.js
+coverage/
