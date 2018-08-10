@@ -51,10 +51,11 @@ const fieldGenerator = (fieldObj: Field, comment?: { text: string, update: boole
 
     const fieldTable = (maxY: number = 23) => {
         const table = document.createElement('table');
-        table.setAttribute('border', '0');
-        table.setAttribute('cellspacing', '1');
-        table.setAttribute('cellpadding', '0');
-        table.setAttribute('bgcolor', '#333');
+        table.className = 'preview-ext-field';
+        table.setAttribute('border', '1px');
+        table.setAttribute('cellspacing', '1px');
+        table.setAttribute('cellpadding', '0px');
+        table.setAttribute('backgroundcolor', '#333');
         table.setAttribute('bordercolor', '#333');
         table.style.backgroundColor = '#333';
 
@@ -67,8 +68,9 @@ const fieldGenerator = (fieldObj: Field, comment?: { text: string, update: boole
     };
 
     const div = document.createElement('div');
+    div.style.backgroundColor = '#333';
+
     const table = fieldTable(height);
-    table.className = 'preview-ext-field';
     div.appendChild(table);
 
     if (comment) {
