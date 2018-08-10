@@ -30,8 +30,6 @@ const fieldGenerator = (fieldObj: Field, comment?: { text: string, update: boole
 
     const fieldTd = (x: number, y: number, isHighlight: boolean) => {
         const td: HTMLTableDataCellElement = document.createElement('td');
-        td.className = 'preview-field';
-        td.id = `fld${x}-${y}`;
         td.setAttribute('width', '16');
         td.setAttribute('height', y < 22 ? '16' : '8');
         td.setAttribute('x', x + '');
@@ -70,15 +68,16 @@ const fieldGenerator = (fieldObj: Field, comment?: { text: string, update: boole
 
     const div = document.createElement('div');
     const table = fieldTable(height);
+    table.className = 'preview-ext-field';
     div.appendChild(table);
 
     if (comment) {
         const input = document.createElement('text');
         input.setAttribute('type', 'text');
-        input.style.color = comment.update ? '#080' : '#fff';
+        input.style.color = comment.text ? (comment.update ? '#fff' : '#999') : '#333';
         input.setAttribute('width', '100%');
         input.style.textAlign = 'center';
-        input.innerText = comment.text;
+        input.innerText = comment.text ? comment.text : '_';
         div.appendChild(input);
     }
 
@@ -86,7 +85,7 @@ const fieldGenerator = (fieldObj: Field, comment?: { text: string, update: boole
 };
 
 // Create HTML element for tip
-const tipId = 'tip-template';
+const tipId = 'fumen-preview-ext-tip';
 const initialText = 'Loading a new image...';
 const templateElement = tipElement(tipId, initialText);
 document.body.appendChild(templateElement);
@@ -161,7 +160,7 @@ const callbacks = (() => {
                             const generator = fieldGenerator(field, comment, maxHeight);
                             content.innerHTML = generator.innerHTML;
 
-                            const elements = document.querySelectorAll('.preview-field');
+                            const elements = document.querySelectorAll('.preview-ext-field');
                             elements.forEach((element) => {
                                 element.addEventListener('mousedown', (evt) => {
                                     const target = evt.target as Element;
