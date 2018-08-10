@@ -11,6 +11,7 @@ declare module 'tippy.js' {
         onHide?: (this: HTMLElement, instance: Instance) => void;
         onHidden?: (this: HTMLElement, instance: Instance) => void;
         popperOptions?: object;
+        interactive?: boolean;
     }
 
     export interface Instance {

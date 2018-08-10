@@ -85,7 +85,10 @@ export function extract(str: string): string {
     return data.trim().replace(/[?\s]+/g, '');
 }
 
-export async function decode(fumen: string): Promise<Page[]> {
+type Callback = (field: Field, move: Move | undefined, comment: string) => void;
+
+export async function decode(fumen: string, callback: Callback = () => {
+}): Promise<Page[]> {
     const updateField = (prev: Field) => {
         const result = {
             changed: false,
@@ -127,6 +130,7 @@ export async function decode(fumen: string): Promise<Page[]> {
             field: number,
         };
         quiz?: Quiz,
+        lastCommentText: string;
     } = {
         repeatCount: -1,
         refIndex: {
@@ -134,6 +138,7 @@ export async function decode(fumen: string): Promise<Page[]> {
             field: 0,
         },
         quiz: undefined,
+        lastCommentText: '',
     };
 
     const pages: Page[] = [];
@@ -178,7 +183,9 @@ export async function decode(fumen: string): Promise<Page[]> {
                 flatten.push(...chars);
             }
 
-            comment = { text: unescape(flatten.slice(0, commentLength).join('')) };
+            const commentText = unescape(flatten.slice(0, commentLength).join(''));
+            store.lastCommentText = commentText;
+            comment = { text: commentText };
             store.refIndex.comment = pageIndex;
 
             try {
@@ -257,6 +264,12 @@ export async function decode(fumen: string): Promise<Page[]> {
             },
         };
         pages.push(page);
+
+        callback(
+            currentFieldObj.field.copy()
+            , currentPiece
+            , store.quiz !== undefined ? store.quiz.format().toString() : store.lastCommentText,
+        );
 
         pageIndex += 1;
 

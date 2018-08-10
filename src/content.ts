@@ -1,6 +1,6 @@
 import tippyJs, { Instance, Tip } from 'tippy.js';
 import { ViewError } from './errors';
-import { decode, extract } from './fumen/fumen';
+import { decode, extract, Move } from './fumen/fumen';
 import { Field } from './fumen/field';
 import { Piece } from './enums';
 import { getHighlightColor, getNormalColor } from './colors';
@@ -13,34 +13,41 @@ const tipElement = (id: string, innerHTML: string) => {
     return div;
 };
 
-const fieldGenerator = (fieldObj: Field) => {
+const fieldGenerator = (fieldObj: Field, comment?: { text: string, update: boolean }, height: number = 23) => {
+    const isFilled = (field: Field, y: number) => {
+        for (let x = 0; x < 10; x += 1) {
+            if (field.get(x, y) === Piece.Empty) return false;
+        }
+        return true;
+    };
+
+    const color = (piece: Piece, y: number, isHighlight: boolean) => {
+        if (piece !== Piece.Empty) {
+            return isHighlight ? getHighlightColor(piece) : getNormalColor(piece);
+        }
+        return y < 20 ? '#000' : '#333';
+    };
+
     const fieldTd = (x: number, y: number, isHighlight: boolean) => {
         const td: HTMLTableDataCellElement = document.createElement('td');
+        td.className = 'preview-field';
         td.id = `fld${x}-${y}`;
         td.setAttribute('width', '16');
         td.setAttribute('height', y < 22 ? '16' : '8');
+        td.setAttribute('x', x + '');
 
         const piece = fieldObj.get(x, y);
-        if (piece !== Piece.Empty) {
-            td.style.backgroundColor = isHighlight ? getHighlightColor(piece) : getNormalColor(piece);
-        } else {
-            td.style.backgroundColor = y < 20 ? '#000' : '#333';
-        }
+        td.style.backgroundColor = color(piece, y, isHighlight);
 
         return td;
     };
 
     const fieldTr = (y: number) => {
         const tr = document.createElement('tr');
-
-        const isFilled = (() => {
-            for (let x = 0; x < 10; x += 1) {
-                if (fieldObj.get(x, y) === Piece.Empty) return false;
-            }
-            return true;
-        })();
-
-        for (let x = 0; x < 10; x += 1) tr.appendChild(fieldTd(x, y, isFilled));
+        for (let x = 0; x < 10; x += 1) {
+            const highlight = isFilled(fieldObj, y);
+            tr.appendChild(fieldTd(x, y, highlight));
+        }
         return tr;
     };
 
@@ -61,16 +68,22 @@ const fieldGenerator = (fieldObj: Field) => {
         return table;
     };
 
-    const field = (maxY: number = 23) => {
-        const div = document.createElement('div');
-        const table = fieldTable(maxY);
-        div.appendChild(table);
-        return div;
-    };
+    const div = document.createElement('div');
+    const table = fieldTable(height);
+    div.appendChild(table);
 
-    return field;
+    if (comment) {
+        const input = document.createElement('text');
+        input.setAttribute('type', 'text');
+        input.style.color = comment.update ? '#080' : '#fff';
+        input.setAttribute('width', '100%');
+        input.style.textAlign = 'center';
+        input.innerText = comment.text;
+        div.appendChild(input);
+    }
+
+    return div;
 };
-
 
 // Create HTML element for tip
 const tipId = 'tip-template';
@@ -101,22 +114,72 @@ const callbacks = (() => {
             }
 
             const fumen = extract(decodeURIComponent(url));
-            console.log(fumen);
 
-            decode(fumen)
-                .then((value) => {
+            const fields: { field: Field, comment: string }[] = [];
+            let isComment = false;
+            let maxHeight = 1;
+            const callback = (field: Field, move: Move | undefined, comment: string) => {
+                if (move !== undefined) field.put(move);
+                fields.push({ field, comment });
+
+                isComment = isComment || comment !== '';
+
+                const pieces = field.toPlayFieldPieces();
+                const index = pieces.reverse().findIndex(piece => piece !== Piece.Empty);
+                const height = 0 <= index ? 23 - Math.floor(index / 10) : 1;
+                if (maxHeight < height) maxHeight = height;
+            };
+
+            decode(fumen, callback)
+                .then(() => {
                     if (updateTime === latestTimeOnShow) {
-                        const element = value[0];
-                        const fieldObj = element.field.obj;
-                        if (!fieldObj) throw new ViewError('Not found field object');
-                        const generator = fieldGenerator(fieldObj);
-                        console.log(value);
-                        // console.log('ok');
-                        // content.innerHTML = 'OK';
-                        // content.appendChild(field());
-                        content.innerHTML = generator().innerHTML;
-                        // console.log(field().innerHTML);
-                        tip.loading = false;
+                        let index = 0;
+
+                        const back = () => {
+                            if (0 < index) {
+                                tip.loading = true;
+                                index -= 1;
+                                const { field, comment } = fields[index];
+                                const nextComment = fields[index + 1].comment;
+                                show(field, isComment ? { text: comment, update: comment !== nextComment } : undefined);
+                                tip.loading = false;
+                            }
+                        };
+
+                        const preview = () => {
+                            if (index < fields.length - 1) {
+                                tip.loading = true;
+                                index += 1;
+                                const prevComment = fields[index - 1].comment;
+                                const { field, comment } = fields[index];
+                                show(field, isComment ? { text: comment, update: comment !== prevComment } : undefined);
+                                tip.loading = false;
+                            }
+                        };
+
+                        const show = (field: Field, comment?: { text: string, update: boolean }) => {
+                            const generator = fieldGenerator(field, comment, maxHeight);
+                            content.innerHTML = generator.innerHTML;
+
+                            const elements = document.querySelectorAll('.preview-field');
+                            elements.forEach((element) => {
+                                element.addEventListener('mousedown', (evt) => {
+                                    const target = evt.target as Element;
+                                    const x = Number(target.getAttribute('x'));
+                                    if (x < 5) {
+                                        back();
+                                    } else {
+                                        preview();
+                                    }
+                                });
+                            });
+                        };
+
+                        {
+                            const { field, comment } = fields[index];
+                            show(field, isComment ? { text: comment, update: true } : undefined);
+                            tip.loading = false;
+                        }
                     }
                 })
                 .catch((error) => {
@@ -125,10 +188,6 @@ const callbacks = (() => {
                         tip.loading = false;
                     }
                 });
-
-            setImmediate(() => {
-
-            });
         },
         onHidden: (tip: Tip, content: Element) => {
             if (latestTimeOnShow <= Date.now()) content.innerHTML = initialText;
@@ -168,15 +227,5 @@ const tip: Tip = tippyJs(elements, {
 
         callbacks.onHidden(tip, content);
     },
-    // prevent tooltip from displaying over button
-    // popperOptions: {
-    //     modifiers: {
-    //         preventOverflow: {
-    //             enabled: false,
-    //         },
-    //         hide: {
-    //             enabled: false,
-    //         },
-    //     },
-    // },
+    interactive: true,
 });
