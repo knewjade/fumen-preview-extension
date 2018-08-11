@@ -3,12 +3,8 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "webpack": "yarn run webpack-content && yarn run webpack-background",
-    "webpack:prod": "yarn run webpack-content:prod && yarn run webpack-background:prod",
-    "webpack-content": "webpack --mode development --config webpack-content.config.js",
-    "webpack-content:prod": "webpack --mode production --config webpack-content.config.js",
-    "webpack-background": "webpack --mode development --config webpack-background.config.js",
-    "webpack-background:prod": "webpack --mode production --config webpack-background.config.js",
+    "webpack": "webpack --mode development --config webpack-content.config.js",
+    "webpack:prod": "webpack --mode production --config webpack-content.config.js",
     "lint": "tslint --project tsconfig.json --config tslint.json",
     "test": "jest"
   },
