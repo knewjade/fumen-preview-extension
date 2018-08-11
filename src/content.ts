@@ -248,6 +248,7 @@ const domains = [
     'fumen.zui.jp',
     'harddrop.com/fumen',
     'punsyuko.com/fumen',
+    '104.236.152.73/fumen',
 ];
 
 const isFumen = (url: string | null | undefined) => {

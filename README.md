@@ -7,15 +7,30 @@ It's Google Chrome extension to quickly view [Fumen for tetris](http://harddrop.
 
 with [solution-finder](https://github.com/knewjade/solution-finder)
 
+`path` command
+
 ![example1](./images/video1.gif)
+
+----
+
+----
+
+
+`ren` command
 
 ![example2](./images/video2.gif)
 
+----
+
+----
 
 with [setup-finder](https://github.com/moozilla/setup-finder)
 
 ![example3](images/video3.gif)
 
+----
+
+----
 
 on [テトリステンプレ集＠テト譜](https://www65.atwiki.jp/tetrismaps/)
 
@@ -32,6 +47,7 @@ on [テトリステンプレ集＠テト譜](https://www65.atwiki.jp/tetrismaps/
 
 * [Fumen Tetris Diagram Creator](http://harddrop.com/fumentool) on Harddrop
 * [連続テト譜エディタ](http://fumen.zui.jp)
+* setup-finder output file
 
 ## Supported fumen version
 

@@ -3,5 +3,5 @@ node_modules/
 yarn-*.log
 src/**/*.js
 src/**/*.js.map
-extention/*.js
+fumen-preview-extension/*.js
 coverage/

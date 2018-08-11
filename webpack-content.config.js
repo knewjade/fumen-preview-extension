@@ -6,7 +6,7 @@ module.exports = {
     ],
     output: {
         filename: 'content.js',
-        path: path.join(__dirname, 'extention')
+        path: path.join(__dirname, 'fumen-preview-extension')
     },
     module: {
         rules: [
