@@ -2,10 +2,7 @@
 
 It's Google Chrome extension to quickly view [Fumen for tetris](http://harddrop.com/fumentool).
 
-
-## Example
-
-### with [solution-finder](https://github.com/knewjade/solution-finder)
+## with [solution-finder](https://github.com/knewjade/solution-finder)
 
 `path` command
 
@@ -15,14 +12,15 @@ It's Google Chrome extension to quickly view [Fumen for tetris](http://harddrop.
 
 ![example2](./images/video2.gif)
 
-### with [setup-finder](https://github.com/moozilla/setup-finder)
+## with [setup-finder](https://github.com/moozilla/setup-finder)
 
 ![example3](images/video3.gif)
 
-### on [テトリステンプレ集＠テト譜](https://www65.atwiki.jp/tetrismaps/)
+## on [テトリステンプレ集＠テト譜](https://www65.atwiki.jp/tetrismaps/)
 
 ![example4](./images/video4.gif)
 
+---
 
 ## Installation
 
