@@ -1,5 +1,5 @@
 import tippyJs, { Instance, Tip } from 'tippy.js';
-import { ViewError } from './errors';
+import { FumenError, ViewError } from './errors';
 import { decode, extract, Move } from './fumen/fumen';
 import { Field } from './fumen/field';
 import { Piece } from './enums';
@@ -13,7 +13,12 @@ const tipElement = (id: string, innerHTML: string) => {
     return div;
 };
 
-const fieldGenerator = (fieldObj: Field, comment?: { text: string, update: boolean }, height: number = 23) => {
+const fieldGenerator = (
+    fieldObj: Field,
+    page: { current: number, max: number },
+    comment?: { text: string, update: boolean },
+    height: number = 23,
+) => {
     const isFilled = (field: Field, y: number) => {
         for (let x = 0; x < 10; x += 1) {
             if (field.get(x, y) === Piece.Empty) return false;
@@ -25,7 +30,7 @@ const fieldGenerator = (fieldObj: Field, comment?: { text: string, update: boole
         if (piece !== Piece.Empty) {
             return isHighlight ? getHighlightColor(piece) : getNormalColor(piece);
         }
-        return y < 20 ? '#000' : '#333';
+        return y < 20 ? '#000' : '#222';
     };
 
     const fieldTd = (x: number, y: number, isHighlight: boolean) => {
@@ -52,12 +57,13 @@ const fieldGenerator = (fieldObj: Field, comment?: { text: string, update: boole
     const fieldTable = (maxY: number = 23) => {
         const table = document.createElement('table');
         table.className = 'preview-ext-field';
-        table.setAttribute('border', '1px');
-        table.setAttribute('cellspacing', '1px');
-        table.setAttribute('cellpadding', '0px');
-        table.setAttribute('backgroundcolor', '#333');
-        table.setAttribute('bordercolor', '#333');
         table.style.backgroundColor = '#333';
+        table.style.borderCollapse = 'separate';
+        table.style.borderSpacing = '1px';
+        table.style.border = '0px';
+        table.style.borderWidth = '0px';
+        table.style.borderColor = '#333';
+        table.style.padding = '0px';
 
         const tBody = document.createElement('tBody');
         for (let y = maxY - 1; 0 <= y; y -= 1) {
@@ -70,17 +76,29 @@ const fieldGenerator = (fieldObj: Field, comment?: { text: string, update: boole
     const div = document.createElement('div');
     div.style.backgroundColor = '#333';
 
-    const table = fieldTable(height);
-    div.appendChild(table);
+    {
+        const text = document.createElement('text');
+        text.setAttribute('width', '100%');
+        text.style.color = '#999';
+        text.style.textAlign = 'center';
+        text.style.fontSize = '9px';
+        text.innerText = page.current + ' / ' + page.max;
+        div.appendChild(text);
+    }
+
+    {
+        const table = fieldTable(height);
+        div.appendChild(table);
+    }
 
     if (comment) {
-        const input = document.createElement('text');
-        input.setAttribute('type', 'text');
-        input.style.color = comment.text ? (comment.update ? '#fff' : '#999') : '#333';
-        input.setAttribute('width', '100%');
-        input.style.textAlign = 'center';
-        input.innerText = comment.text ? comment.text : '_';
-        div.appendChild(input);
+        const text = document.createElement('text');
+        text.setAttribute('width', '100%');
+        text.style.color = comment.text ? (comment.update ? '#fff' : '#999') : '#333';
+        text.style.textAlign = 'center';
+        text.style.fontSize = '16px';
+        text.innerText = comment.text ? comment.text : '_';
+        div.appendChild(text);
     }
 
     return div;
@@ -107,14 +125,24 @@ const callbacks = (() => {
             latestTimeOnShow = updateTime;
 
             tip.loading = true;
-
             if (url === undefined) {
                 content.innerHTML = `<div>Not found url</div>`;
                 tip.loading = false;
                 return;
             }
 
-            const fumen = extract(decodeURIComponent(url));
+            let fumen;
+            try {
+                fumen = extract(decodeURIComponent(url));
+            } catch (e) {
+                console.log(e);
+                if (e instanceof FumenError) {
+                    content.innerHTML = `<div>Not support version</div>`;
+                    tip.loading = false;
+                    return;
+                }
+                throw e;
+            }
 
             const fields: { field: Field, comment: string }[] = [];
             let isComment = false;
@@ -142,7 +170,11 @@ const callbacks = (() => {
                                 index -= 1;
                                 const { field, comment } = fields[index];
                                 const nextComment = fields[index + 1].comment;
-                                show(field, isComment ? { text: comment, update: comment !== nextComment } : undefined);
+                                show(
+                                    field,
+                                    { current: index + 1, max: fields.length },
+                                    isComment ? { text: comment, update: comment !== nextComment } : undefined,
+                                );
                                 tip.loading = false;
                             }
                         };
@@ -153,13 +185,21 @@ const callbacks = (() => {
                                 index += 1;
                                 const prevComment = fields[index - 1].comment;
                                 const { field, comment } = fields[index];
-                                show(field, isComment ? { text: comment, update: comment !== prevComment } : undefined);
+                                show(
+                                    field,
+                                    { current: index + 1, max: fields.length },
+                                    isComment ? { text: comment, update: comment !== prevComment } : undefined,
+                                );
                                 tip.loading = false;
                             }
                         };
 
-                        const show = (field: Field, comment?: { text: string, update: boolean }) => {
-                            const generator = fieldGenerator(field, comment, maxHeight);
+                        const show = (
+                            field: Field,
+                            page: { current: number, max: number },
+                            comment?: { text: string, update: boolean },
+                        ) => {
+                            const generator = fieldGenerator(field, page, comment, maxHeight);
                             content.innerHTML = generator.innerHTML;
 
                             const elements = document.querySelectorAll('.preview-ext-field');
@@ -178,7 +218,11 @@ const callbacks = (() => {
 
                         {
                             const { field, comment } = fields[index];
-                            show(field, isComment ? { text: comment, update: true } : undefined);
+                            show(
+                                field,
+                                { current: index + 1, max: fields.length },
+                                isComment ? { text: comment, update: true } : undefined,
+                            );
                             tip.loading = false;
                         }
                     }
@@ -200,9 +244,20 @@ const callbacks = (() => {
 const aElements: HTMLAnchorElement[] = [];
 document.querySelectorAll('a').forEach(value => aElements.push(value));
 
+const domains = [
+    'fumen.zui.jp',
+    'harddrop.com/fumen',
+    'punsyuko.com/fumen',
+];
+
 const isFumen = (url: string | null | undefined) => {
     if (!url) return false;
-    return url.startsWith('http://fumen.zui.jp/');
+    for (const domain of domains) {
+        if (url.startsWith(`http://${domain}/`) || url.startsWith(`https://${domain}/`)) {
+            if (url.includes('v115@') || url.includes('m115@') || url.includes('d115@')) return true;
+        }
+    }
+    return false;
 };
 
 const elements = aElements.filter(element => isFumen(element.href));
