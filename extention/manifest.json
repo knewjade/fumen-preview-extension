@@ -1,6 +1,6 @@
 {
   "name": "Fumen Preview",
-  "version": "1.0",
+  "version": "0.1",
   "content_scripts": [
     {
       "matches": [
