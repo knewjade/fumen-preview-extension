@@ -4,4 +4,5 @@ yarn-*.log
 src/**/*.js
 src/**/*.js.map
 fumen-preview-extension/*.js
+fumen-preview-extension.zip
 coverage/
