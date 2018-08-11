@@ -37,7 +37,7 @@ It's Google Chrome extension to quickly view [Fumen for tetris](http://harddrop.
 
 ## Supported fumen version
 
-v1.15 only (v115@~, m115@~, d115@~)
+v1.15 only (v115@, m115@, d115@)
 
 ## Contact
 
