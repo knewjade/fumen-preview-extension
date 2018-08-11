@@ -24,7 +24,7 @@ It's Google Chrome extension to quickly view [Fumen for tetris](http://harddrop.
 
 ## Installation
 
-1. Download archived package from [releases](https://github.com/knewjade/fumen-preview-extension/releases)
+1. Download archived package from [releases](https://github.com/knewjade/fumen-preview-extension/releases/latest)
 2. Extract
 3. Load extension directory on chrome (developers mode)
 
