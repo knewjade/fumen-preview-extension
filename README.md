@@ -5,42 +5,30 @@ It's Google Chrome extension to quickly view [Fumen for tetris](http://harddrop.
 
 ## Example
 
-with [solution-finder](https://github.com/knewjade/solution-finder)
+### with [solution-finder](https://github.com/knewjade/solution-finder)
 
 `path` command
 
 ![example1](./images/video1.gif)
 
-----
-
-----
-
-
 `ren` command
 
 ![example2](./images/video2.gif)
 
-----
-
-----
-
-with [setup-finder](https://github.com/moozilla/setup-finder)
+### with [setup-finder](https://github.com/moozilla/setup-finder)
 
 ![example3](images/video3.gif)
 
-----
-
-----
-
-on [テトリステンプレ集＠テト譜](https://www65.atwiki.jp/tetrismaps/)
+### on [テトリステンプレ集＠テト譜](https://www65.atwiki.jp/tetrismaps/)
 
 ![example4](./images/video4.gif)
 
+
 ## Installation
 
-1. Download archived package
+1. Download archived package from [releases](https://github.com/knewjade/fumen-extension/releases)
 2. Extract
-3. Load extension directory on chrome (developer mode)
+3. Load extension directory on chrome (developers mode)
 
 
 ## Supported sites
