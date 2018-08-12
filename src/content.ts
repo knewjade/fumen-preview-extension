@@ -1,6 +1,6 @@
 import tippyJs, { Instance, Tip } from 'tippy.js';
-import { FumenError, ViewError } from './errors';
-import { decode, extract, Move } from './fumen/fumen';
+import { ViewError } from './errors';
+import { decode, Move } from './fumen/fumen';
 import { Field } from './fumen/field';
 import { Piece } from './enums';
 import { getHighlightColor, getNormalColor } from './colors';
@@ -131,24 +131,12 @@ const callbacks = (() => {
                 return;
             }
 
-            if (!url.includes('v115@') && !url.includes('m115@') && !url.includes('d115@')) {
-                const version = url.match(/[v|m|l](\d{3})@/);
+            const match = url.match(/[vml](\d{3})@/);
+            const version = match && match[1] ? match[1] : '';
+            if (version !== '115' && version !== '110') {
                 content.innerHTML = `<div>v${version && version[1] ? version[1] : ''}</div>`;
                 tip.loading = false;
                 return;
-            }
-
-            let fumen;
-            try {
-                fumen = extract(decodeURIComponent(url));
-            } catch (e) {
-                console.log(e);
-                if (e instanceof FumenError) {
-                    content.innerHTML = `<div>Not support version</div>`;
-                    tip.loading = false;
-                    return;
-                }
-                throw e;
             }
 
             const fields: { field: Field, comment: string }[] = [];
@@ -166,7 +154,7 @@ const callbacks = (() => {
                 if (maxHeight < height) maxHeight = height;
             };
 
-            decode(fumen, callback)
+            decode(decodeURIComponent(url), callback)
                 .then(() => {
                     if (updateTime === latestTimeOnShow) {
                         let index = 0;
@@ -257,13 +245,15 @@ const domains = [
     'harddrop.com/fumen',
     'punsyuko.com/fumen',
     '104.236.152.73/fumen',
-    'piro19.com/pirofu',
 ];
 
 const isFumen = (url: string | null | undefined): boolean => {
     if (!url) return false;
     for (const domain of domains) {
-        if (url.startsWith(`http://${domain}/`) || url.startsWith(`https://${domain}/`)) return true;
+        if (url.startsWith(`http://${domain}/`) || url.startsWith(`https://${domain}/`)) {
+            const match = url.match(/[vml](\d{3})@/);
+            if (match && match[1]) return true;
+        }
     }
     return false;
 };

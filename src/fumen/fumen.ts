@@ -57,19 +57,14 @@ function enodeFromCommentChars(ch: string): number {
 }
 
 const FIELD_WIDTH = FieldConstants.Width;
-const FIELD_TOP = FieldConstants.Height;
-const FIELD_MAX_HEIGHT = FIELD_TOP + FieldConstants.SentLine;
-const FIELD_BLOCKS = FIELD_MAX_HEIGHT * FIELD_WIDTH;
 
-export function extract(str: string): string {
+export function extract(str: string): { version: '115' | '110', data: string } {
+    const format = (version: '115' | '110', data: string) => {
+        const trim = data.trim().replace(/[?\s]+/g, '');
+        return { version, data: trim };
+    };
+
     let data = str;
-
-    // v115@~
-    const prefix = '115@';
-    const prefixIndex = str.indexOf(prefix);
-    if (0 <= prefixIndex) {
-        data = data.substr(prefixIndex + prefix.length);
-    }
 
     // url parameters
     const paramIndex = data.indexOf('&');
@@ -77,18 +72,53 @@ export function extract(str: string): string {
         data = data.substring(0, paramIndex);
     }
 
-    // v114@~
-    if (data.includes('@')) {
-        throw new FumenError('Fumen is supported v115 only');
+    // v115@~
+    {
+        const prefix = '115@';
+        const prefixIndex = str.indexOf(prefix);
+        if (0 <= prefixIndex) {
+            const sub = data.substr(prefixIndex + prefix.length);
+            return format('115', sub);
+        }
     }
 
-    return data.trim().replace(/[?\s]+/g, '');
+    // v110@~
+    {
+        const prefix = '110@';
+        const prefixIndex = str.indexOf(prefix);
+        if (0 <= prefixIndex) {
+            const sub = data.substr(prefixIndex + prefix.length);
+            return format('110', sub);
+        }
+    }
+
+    throw new FumenError('Fumen is not supported');
 }
 
 type Callback = (field: Field, move: Move | undefined, comment: string) => void;
 
 export async function decode(fumen: string, callback: Callback = () => {
 }): Promise<Page[]> {
+    const { version, data } = extract(fumen);
+    console.log(version, data);
+    switch (version) {
+    case '115':
+        return innerDecode(data, 23, callback);
+    case '110':
+        return innerDecode(data, 21, callback);
+    }
+    throw new FumenError('Not support decode');
+}
+
+export async function innerDecode(
+    fumen: string,
+    fieldTop: number,
+    callback: Callback = () => {
+    },
+): Promise<Page[]> {
+    const FIELD_MAX_HEIGHT = fieldTop + FieldConstants.SentLine;
+    const FIELD_BLOCKS = FIELD_MAX_HEIGHT * FIELD_WIDTH;
+
     const updateField = (prev: Field) => {
         const result = {
             changed: false,
@@ -108,7 +138,7 @@ export async function decode(fumen: string, callback: Callback = () => {
 
             for (let block = 0; block < numOfBlocks + 1; block += 1) {
                 const x = index % FIELD_WIDTH;
-                const y = FIELD_TOP - Math.floor(index / FIELD_WIDTH) - 1;
+                const y = fieldTop - Math.floor(index / FIELD_WIDTH) - 1;
                 result.field.add(x, y, diff - 8);
                 index += 1;
             }
@@ -117,10 +147,8 @@ export async function decode(fumen: string, callback: Callback = () => {
         return result;
     };
 
-    const data = extract(fumen);
-
     let pageIndex = 0;
-    const values = new Values(data);
+    const values = new Values(fumen);
     let prevField = new Field({});
 
     const store: {
@@ -163,7 +191,7 @@ export async function decode(fumen: string, callback: Callback = () => {
 
         // Parse action
         const actionValue = values.poll(3);
-        const action = decodeAction(actionValue);
+        const action = decodeAction(actionValue, fieldTop);
 
         // Parse comment
         let comment;
@@ -413,6 +441,10 @@ export async function encode(pages: Page[]): Promise<string> {
 // 前のフィールドがないときは空のフィールドを指定する
 // 入力フィールドの高さは23, 幅は10
 function encodeField(prev: Field, current: Field) {
+    const FIELD_TOP = 23;
+    const FIELD_MAX_HEIGHT = FIELD_TOP + 1;
+    const FIELD_BLOCKS = FIELD_MAX_HEIGHT * FIELD_WIDTH;
+
     const values = new Values();
 
     // 前のフィールドとの差を計算: 0〜16
