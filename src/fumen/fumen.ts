@@ -100,7 +100,6 @@ type Callback = (field: Field, move: Move | undefined, comment: string) => void;
 export async function decode(fumen: string, callback: Callback = () => {
 }): Promise<Page[]> {
     const { version, data } = extract(fumen);
-    console.log(version, data);
     switch (version) {
     case '115':
         return innerDecode(data, 23, callback);

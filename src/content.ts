@@ -240,39 +240,6 @@ const isMarked = (element: Element): boolean => {
     return !!element.getAttribute('fumen-preview-loaded');
 };
 
-const domains = [
-    'fumen.zui.jp',
-    'harddrop.com/fumen',
-    'punsyuko.com/fumen',
-    '104.236.152.73/fumen',
-];
-
-const isFumen = (url: string | null | undefined): boolean => {
-    if (!url) return false;
-    for (const domain of domains) {
-        if (url.startsWith(`http://${domain}/`) || url.startsWith(`https://${domain}/`)) {
-            const match = url.match(/[vml](\d{3})@/);
-            if (match && match[1]) return true;
-        }
-    }
-    return false;
-};
-
-const shortnerDomains = [
-    'tinyurl.com',
-    't.co',
-    'bit.ly',
-    'goo.gl',
-];
-
-const isURLShortener = (url: string | null | undefined): boolean => {
-    if (!url) return false;
-    for (const domain of shortnerDomains) {
-        if (url.startsWith(`http://${domain}/`) || url.startsWith(`https://${domain}/`)) return true;
-    }
-    return false;
-};
-
 const createTip = (elements: Element | Element[], url: (reference: Element) => string) => {
     const tip: Tip = tippyJs(elements, {
         arrow: true,
@@ -303,14 +270,30 @@ const mark = (elements: Element[]) => {
     elements.forEach(element => element.setAttribute('fumen-preview-loaded', 'yes'));
 };
 
-chrome.runtime.onMessage.addListener((request) => {
-    if (request && request.action === 'reload') {
-        load();
-    }
-    return true;
-});
+const load = ({ shortener, domains, shortnerDomains }: {
+    shortener: boolean;
+    domains: string[];
+    shortnerDomains: string[];
+}) => {
+    const isFumen = (url: string | null | undefined): boolean => {
+        if (!url) return false;
+        for (const domain of domains) {
+            if (url.startsWith(`http://${domain}/`) || url.startsWith(`https://${domain}/`)) {
+                const match = url.match(/[vml](\d{3})@/);
+                if (match && match[1]) return true;
+            }
+        }
+        return false;
+    };
 
-const load = () => {
+    const isURLShortener = (url: string | null | undefined): boolean => {
+        if (!url) return false;
+        for (const domain of shortnerDomains) {
+            if (url.startsWith(`http://${domain}/`) || url.startsWith(`https://${domain}/`)) return true;
+        }
+        return false;
+    };
+
     // Create tip
     const aElements: HTMLAnchorElement[] = [];
     document.querySelectorAll('a').forEach(value => aElements.push(value));
@@ -341,7 +324,7 @@ const load = () => {
 
         type Response = RedirectedResponse | BodyResponse;
 
-        const elements = aElements
+        const elements = (shortener ? aElements : [])
             .filter(element => isURLShortener(element.href))
             .filter(element => !isMarked(element));
 
@@ -379,4 +362,54 @@ const load = () => {
     }
 };
 
-load();
+const getFromStrage = (key: string) => {
+    interface Response {
+        code: number;
+        value?: string;
+    }
+
+    return new Promise<{ key: string, value?: string }>((resolve) => {
+        chrome.runtime.sendMessage({ key, action: 'storage' }, (response: Response) => {
+            if (response.code !== 200) throw new ViewError('Failed to get: ' + key);
+            resolve({ key, value: response.value });
+        });
+    });
+};
+
+const promises: Promise<{ key: string, value?: string }>[] = [getFromStrage('shortener')];
+const start = () => {
+    Promise.all(promises)
+        .then((values) => {
+            const domains = [
+                'fumen.zui.jp',
+                'harddrop.com/fumen',
+                'punsyuko.com/fumen',
+                '104.236.152.73/fumen',
+            ];
+
+            const shortnerDomains = [
+                'tinyurl.com',
+                't.co',
+                'bit.ly',
+                'goo.gl',
+            ];
+
+            const shortener = values.find(value => value.key === 'shortener');
+            console.log(shortener);
+            load({
+                domains,
+                shortnerDomains,
+                shortener: shortener && shortener.value ? shortener.value.toLowerCase() === 'true' : true,
+            });
+        })
+        .catch((error) => {
+            console.error(error);
+        });
+};
+start();
+
+chrome.runtime.onMessage.addListener((request) => {
+    console.log('reload');
+    if (request && request.action === 'reload') start();
+    return true;
+});

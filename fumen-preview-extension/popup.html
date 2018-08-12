@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Fumen Preview Extension Popup</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-rc.2/css/materialize.min.css">
+</head>
+<body>
+    <div style="margin: 10px; width: 250px;">
+        <h5>Settings</h5>
+
+        <h6>[Fumen Servers]</h6>
+
+        <div class="input-field" style="margin: 20px 10px;">
+            <textarea id="fumen-server-domains" class="materialize-textarea"></textarea>
+            <label for="fumen-server-domains">Domains</label>
+        </div>
+
+
+        <h6>[Check shortened url]</h6>
+
+        <div class="switch" style="margin: 20px 10px;">
+            <div class="switch">
+                <label>
+                    Off
+                    <input id="shortener" type="checkbox">
+                    <span class="lever"></span>
+                    On
+                </label>
+            </div>
+
+            <div class="input-field" style="margin-top: 20px;">
+                <textarea id="url-shortener-domains" class="materialize-textarea"></textarea>
+                <label for="url-shortener-domains">URL Shortener domains</label>
+            </div>
+        </div>
+
+        <div class="buttons" style="margin: 20px 0px;">
+            <a href="#" id="cancel" class="waves-effect waves-light btn white black-text">Cancel</a>
+            <a href="#" id="save" class="waves-effect waves-light btn red lighten-2">Save</a>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-rc.2/js/materialize.min.js"></script>
+    <script src="popup.js"></script>
+</body>
+</html>

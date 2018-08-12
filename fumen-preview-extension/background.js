@@ -28,6 +28,9 @@ chrome.runtime.onMessage.addListener((request, sender, callback) => {
                 console.error(error);
                 return callback({ code: 500, message: 'Failed to fetch' });
             });
+    } else if (request.action === 'storage' && request.key) {
+        callback({ code: 200, value: localStorage[request.key] });
+        return true;
     } else {
         console.log('Unexpected request: %j', request);
         callback({ code: 400, message: 'Unexpected request' });
@@ -35,6 +38,29 @@ chrome.runtime.onMessage.addListener((request, sender, callback) => {
     return true;
 });
 
-chrome.browserAction.onClicked.addListener((tab) => {
-    chrome.tabs.sendMessage(tab.id, { action: 'reload' });
+const contextMenus = (() => {
+    const items = {};
+    chrome.contextMenus.onClicked.addListener((info, tab) => items[info.menuItemId].onclick(info, tab));
+
+    return {
+        register: (properties) => {
+            const onclick = properties.onclick;
+            properties.onclick = null;
+            items[properties.id] = { onclick, properties: properties };
+
+        },
+        create: () => {
+            Object.keys(items).forEach(key => chrome.contextMenus.create(items[key].properties));
+        },
+    };
+})();
+
+contextMenus.register({
+    title: "コンテキストメニューを追加: Reload",
+    id: 'hello',
+    contexts: ["all"],
+    type: "normal",
+    onclick: (info, tab) => chrome.tabs.sendMessage(tab.id, { action: 'reload' }),
 });
+
+chrome.runtime.onInstalled.addListener(contextMenus.create);
