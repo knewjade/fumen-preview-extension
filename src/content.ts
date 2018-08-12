@@ -330,8 +330,11 @@ const load = ({ shortener, domains, shortnerDomains }: {
 
         elements.forEach((element) => {
             let cachedUrl: string | undefined = undefined;
+            let isMouseOvered = false;
             element.addEventListener('mouseover', (evt) => {
                 if (cachedUrl) return;
+
+                isMouseOvered = true;
 
                 const target = evt.currentTarget as Element;
                 if (!isHTMLAnchorElement(target)) throw new ViewError('Unexpected element');
@@ -353,9 +356,10 @@ const load = ({ shortener, domains, shortnerDomains }: {
                     cachedUrl = url;
                     const tip = createTip(target, () => url);
                     const tooltip = tip.tooltips[0];
-                    if (tooltip) tooltip.show();
+                    if (isMouseOvered && tooltip) tooltip.show();
                 });
             });
+            element.addEventListener('mouseout', () => isMouseOvered = false);
         });
 
         mark(elements);
@@ -376,29 +380,50 @@ const getFromStrage = (key: string) => {
     });
 };
 
-const promises: Promise<{ key: string, value?: string }>[] = [getFromStrage('shortener')];
+enum StrageKeys {
+    FumenServerDomains = 'fumen-server-domains',
+    Shortener = 'shortener',
+    UrlShortenerDomains = 'url-shortener-domains',
+}
+
+const promises: Promise<{ key: string, value?: string }>[] = [
+    getFromStrage(StrageKeys.FumenServerDomains),
+    getFromStrage(StrageKeys.Shortener),
+    getFromStrage(StrageKeys.UrlShortenerDomains),
+];
 const start = () => {
     Promise.all(promises)
         .then((values) => {
-            const domains = [
+            const defaultFumenServerDomains = [
                 'fumen.zui.jp',
                 'harddrop.com/fumen',
                 'punsyuko.com/fumen',
                 '104.236.152.73/fumen',
             ];
 
-            const shortnerDomains = [
+            const defaultUrlShortnerDomains = [
                 'tinyurl.com',
                 't.co',
                 'bit.ly',
                 'goo.gl',
             ];
 
-            const shortener = values.find(value => value.key === 'shortener');
-            console.log(shortener);
+            const shortener = values.find(value => value.key === StrageKeys.Shortener);
+            // console.log(shortener);
+
+            const fumenServerDomains = values.find(value => value.key === StrageKeys.FumenServerDomains);
+            // console.log(fumenServerDomains);
+
+            const urlShortenerDomains = values.find(value => value.key === StrageKeys.UrlShortenerDomains);
+            // console.log(urlShortenerDomains);
+
             load({
-                domains,
-                shortnerDomains,
+                domains: fumenServerDomains && fumenServerDomains.value
+                    ? fumenServerDomains.value.split(';').map(line => line.trim()).filter(line => line.length !== 0)
+                    : defaultFumenServerDomains,
+                shortnerDomains: urlShortenerDomains && urlShortenerDomains.value
+                    ? urlShortenerDomains.value.split(';').map(line => line.trim()).filter(line => line.length !== 0)
+                    : defaultUrlShortnerDomains,
                 shortener: shortener && shortener.value ? shortener.value.toLowerCase() === 'true' : true,
             });
         })
@@ -409,7 +434,7 @@ const start = () => {
 start();
 
 chrome.runtime.onMessage.addListener((request) => {
-    console.log('reload');
+    // console.log('reload');
     if (request && request.action === 'reload') start();
     return true;
 });

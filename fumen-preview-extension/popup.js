@@ -3,7 +3,7 @@ const load = () => {
         const element = document.querySelector('#fumen-server-domains');
         const domains = localStorage['fumen-server-domains'];
         if (domains !== undefined) {
-            element.value = domains.split(';').map(line => line.trim()).join('\n');
+            element.value = domains.split(';').map(line => line.trim()).filter(line => line.length !== 0).join('\n');
         } else {
             const domains = [
                 'fumen.zui.jp',
@@ -20,7 +20,7 @@ const load = () => {
         const element = document.querySelector('#url-shortener-domains');
         const domains = localStorage['url-shortener-domains'];
         if (domains !== undefined) {
-            element.value = domains.split(';').map(line => line.trim()).join('\n');
+            element.value = domains.split(';').map(line => line.trim()).filter(line => line.length !== 0).join('\n');
         } else {
             const domains = [
                 'tinyurl.com',
@@ -56,18 +56,22 @@ const load = () => {
     if (element !== undefined) element.addEventListener("click", () => {
         {
             const element = document.querySelector('#fumen-server-domains');
-            localStorage['fumen-server-domains'] = element.value.split('\n').map(line => line.trim()).join(';');
+            localStorage['fumen-server-domains'] = element.value.split('\n')
+                .map(line => line.trim()).filter(line => line.length !== 0).join(';');
         }
 
         {
             const element = document.querySelector('#url-shortener-domains');
-            localStorage['url-shortener-domains'] = element.value.split('\n').map(line => line.trim()).join(';');
+            localStorage['url-shortener-domains'] = element.value.split('\n')
+                .map(line => line.trim()).filter(line => line.length !== 0).join(';');
         }
 
         {
             const element = document.querySelector('#shortener');
             localStorage['shortener'] = element.checked;
         }
+
+        M.toast({ html: 'Saved', displayLength: 500 })
     });
 }
 

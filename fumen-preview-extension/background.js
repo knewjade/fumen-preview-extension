@@ -56,8 +56,8 @@ const contextMenus = (() => {
 })();
 
 contextMenus.register({
-    title: "コンテキストメニューを追加: Reload",
-    id: 'hello',
+    title: "Reload this page",
+    id: 'reload',
     contexts: ["all"],
     type: "normal",
     onclick: (info, tab) => chrome.tabs.sendMessage(tab.id, { action: 'reload' }),
