@@ -5,10 +5,11 @@
   "scripts": {
     "webpack": "webpack --mode development --config webpack-content.config.js",
     "webpack:prod": "webpack --mode production --config webpack-content.config.js",
-    "lint": "tslint --project tsconfig.json --config tslint.json",
-    "test": "jest"
+    "test": "jest",
+    "lint": "tslint --project tsconfig.json --config tslint.json"
   },
   "devDependencies": {
+    "@types/chrome": "0.0.71",
     "@types/jest": "23.3.1",
     "@types/node": "10.5.7",
     "jest": "23.4.2",

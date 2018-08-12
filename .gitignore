@@ -3,6 +3,6 @@ node_modules/
 yarn-*.log
 src/**/*.js
 src/**/*.js.map
-fumen-preview-extension/*.js
+fumen-preview-extension/content.js
 fumen-preview-extension.zip
 coverage/

@@ -1,6 +1,11 @@
 declare module 'tippy.js' {
     export interface Tip {
         loading: boolean;
+        tooltips: Tooltip[];
+    }
+
+    export interface Tooltip {
+        show: () => void;
     }
 
     export interface Option {

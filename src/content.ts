@@ -131,6 +131,13 @@ const callbacks = (() => {
                 return;
             }
 
+            if (!url.includes('v115@') && !url.includes('m115@') && !url.includes('d115@')) {
+                const version = url.match(/[v|m|l](\d{3})@/);
+                content.innerHTML = `<div>v${version && version[1] ? version[1] : ''}</div>`;
+                tip.loading = false;
+                return;
+            }
+
             let fumen;
             try {
                 fumen = extract(decodeURIComponent(url));
@@ -240,49 +247,146 @@ const callbacks = (() => {
     };
 })();
 
-// Create tip
-const aElements: HTMLAnchorElement[] = [];
-document.querySelectorAll('a').forEach(value => aElements.push(value));
+const isMarked = (element: Element): boolean => {
+    if (!element) return false;
+    return !!element.getAttribute('fumen-preview-loaded');
+};
 
 const domains = [
     'fumen.zui.jp',
     'harddrop.com/fumen',
     'punsyuko.com/fumen',
     '104.236.152.73/fumen',
+    'piro19.com/pirofu',
 ];
 
-const isFumen = (url: string | null | undefined) => {
+const isFumen = (url: string | null | undefined): boolean => {
     if (!url) return false;
     for (const domain of domains) {
-        if (url.startsWith(`http://${domain}/`) || url.startsWith(`https://${domain}/`)) {
-            if (url.includes('v115@') || url.includes('m115@') || url.includes('d115@')) return true;
-        }
+        if (url.startsWith(`http://${domain}/`) || url.startsWith(`https://${domain}/`)) return true;
     }
     return false;
 };
 
-const elements = aElements.filter(element => isFumen(element.href));
+const shortnerDomains = [
+    'tinyurl.com',
+    't.co',
+    'bit.ly',
+    'goo.gl',
+];
 
-const tip: Tip = tippyJs(elements, {
-    arrow: true,
-    placement: 'right',
-    html: `#${tipId}`,
-    onShow(instances: Instance) {
-        // `this` inside callbacks refers to the popper element
-        const content = this.querySelector('.tippy-content');
-        if (!content) throw new ViewError('Cannot get tippy content');
+const isURLShortener = (url: string | null | undefined): boolean => {
+    if (!url) return false;
+    for (const domain of shortnerDomains) {
+        if (url.startsWith(`http://${domain}/`) || url.startsWith(`https://${domain}/`)) return true;
+    }
+    return false;
+};
 
-        const reference = instances.reference;
-        if (!isHTMLAnchorElement(reference)) throw new ViewError('Unexpected element');
+const createTip = (elements: Element | Element[], url: (reference: Element) => string) => {
+    const tip: Tip = tippyJs(elements, {
+        arrow: true,
+        placement: 'right',
+        html: `#${tipId}`,
+        onShow(instances: Instance) {
+            // `this` inside callbacks refers to the popper element
+            const content = this.querySelector('.tippy-content');
+            if (!content) throw new ViewError('Cannot get tippy content');
 
-        callbacks.onShow(tip, content, reference.href);
-    },
-    onHidden() {
-        // `this` inside callbacks refers to the popper element
-        const content = this.querySelector('.tippy-content');
-        if (!content) throw new ViewError('Cannot get tippy content');
+            const reference = instances.reference;
 
-        callbacks.onHidden(tip, content);
-    },
-    interactive: true,
+            callbacks.onShow(tip, content, url(reference));
+        },
+        onHidden() {
+            // `this` inside callbacks refers to the popper element
+            const content = this.querySelector('.tippy-content');
+            if (!content) throw new ViewError('Cannot get tippy content');
+
+            callbacks.onHidden(tip, content);
+        },
+        interactive: true,
+    });
+    return tip;
+};
+
+const mark = (elements: Element[]) => {
+    elements.forEach(element => element.setAttribute('fumen-preview-loaded', 'yes'));
+};
+
+chrome.runtime.onMessage.addListener((request) => {
+    if (request && request.action === 'reload') {
+        load();
+    }
+    return true;
 });
+
+const load = () => {
+    // Create tip
+    const aElements: HTMLAnchorElement[] = [];
+    document.querySelectorAll('a').forEach(value => aElements.push(value));
+
+    {
+        const elements = aElements
+            .filter(element => isFumen(element.href))
+            .filter(element => !isMarked(element));
+        createTip(elements, (reference) => {
+            if (!isHTMLAnchorElement(reference)) throw new ViewError('Unexpected element');
+            return reference.href;
+        });
+        mark(elements);
+    }
+
+    {
+        interface RedirectedResponse {
+            code: number;
+            redirected: true;
+            url: string;
+        }
+
+        interface BodyResponse {
+            code: number;
+            redirected: false;
+            title: string;
+        }
+
+        type Response = RedirectedResponse | BodyResponse;
+
+        const elements = aElements
+            .filter(element => isURLShortener(element.href))
+            .filter(element => !isMarked(element));
+
+        elements.forEach((element) => {
+            let cachedUrl: string | undefined = undefined;
+            element.addEventListener('mouseover', (evt) => {
+                if (cachedUrl) return;
+
+                const target = evt.currentTarget as Element;
+                if (!isHTMLAnchorElement(target)) throw new ViewError('Unexpected element');
+
+                const check = (url: string, onSuccess: (nextUrl: string) => void) => {
+                    console.log(url);
+
+                    chrome.runtime.sendMessage({ url, action: 'test' }, (response: Response) => {
+                        console.log(response);
+                        if (response.code !== 200) return;
+
+                        const nextUrl = response.redirected ? response.url : response.title;
+                        if (isFumen(nextUrl)) onSuccess(nextUrl);
+                        if (isURLShortener(nextUrl)) check(nextUrl, onSuccess);
+                    });
+                };
+
+                check(target.href, (url: string) => {
+                    cachedUrl = url;
+                    const tip = createTip(target, () => url);
+                    const tooltip = tip.tooltips[0];
+                    if (tooltip) tooltip.show();
+                });
+            });
+        });
+
+        mark(elements);
+    }
+};
+
+load();
