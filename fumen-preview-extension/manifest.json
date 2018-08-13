@@ -1,6 +1,7 @@
 {
   "name": "Fumen Preview",
-  "version": "0.2",
+  "description": "Quickly view fumen for tetris",
+  "version": "0.21",
   "content_scripts": [
     {
       "matches": [
