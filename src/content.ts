@@ -322,6 +322,10 @@ const load = ({ shortener, domains, shortnerDomains }: {
             title: string;
         }
 
+        const isRedirectedResponse = (response: Response): response is RedirectedResponse => {
+            return (response as RedirectedResponse).url !== undefined;
+        };
+
         type Response = RedirectedResponse | BodyResponse;
 
         const elements = (shortener ? aElements : [])
@@ -340,13 +344,13 @@ const load = ({ shortener, domains, shortnerDomains }: {
                 if (!isHTMLAnchorElement(target)) throw new ViewError('Unexpected element');
 
                 const check = (url: string, onSuccess: (nextUrl: string) => void) => {
-                    console.log(url);
+                    // console.log(url);
 
                     chrome.runtime.sendMessage({ url, action: 'test' }, (response: Response) => {
-                        console.log(response);
+                        // console.log(response);
                         if (response.code !== 200) return;
-
-                        const nextUrl = response.redirected ? response.url : response.title;
+                        // console.log(response);
+                        const nextUrl = isRedirectedResponse(response) ? response.url : response.title;
                         if (isFumen(nextUrl)) onSuccess(nextUrl);
                         if (isURLShortener(nextUrl)) check(nextUrl, onSuccess);
                     });

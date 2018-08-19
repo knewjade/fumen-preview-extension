@@ -8,21 +8,26 @@ chrome.runtime.onMessage.addListener((request, sender, callback) => {
                     return callback({ ...result, url: response.url })
                 }
 
-                response.text()
-                    .then(body => {
-                        const match = body.match(/<title>(.+?)<\/title>/);
-                        console.log(body);
+                if (response.url.startsWith('http://t.co/') || response.url.startsWith('https://t.co/')) {
+                    // console.log(response);
+                    response.text()
+                        .then(body => {
+                            const match = body.match(/<title>(.+?)<\/title>/);
+                            // console.log(body);
 
-                        if (match && match[1]) {
-                            return callback({ ...result, title: match[1] })
-                        }
+                            if (match && match[1]) {
+                                return callback({ ...result, title: match[1] })
+                            }
 
-                        return callback({ code: 500, message: 'Failed to get title' });
-                    })
-                    .catch(error => {
-                        console.error(error);
-                        return callback({ code: 500, message: 'Failed to get body text' });
-                    });
+                            return callback({ code: 500, message: 'Failed to get title' });
+                        })
+                        .catch(error => {
+                            console.error(error);
+                            return callback({ code: 500, message: 'Failed to get body text' });
+                        });
+                } else {
+                    return callback({ ...result, url: response.url });
+                }
             })
             .catch(error => {
                 console.error(error);
