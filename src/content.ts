@@ -37,7 +37,7 @@ const fieldGenerator = (
         const td: HTMLTableDataCellElement = document.createElement('td');
         td.setAttribute('width', '16');
         td.setAttribute('height', y < 22 ? '16' : '8');
-        td.setAttribute('x', x + '');
+        td.setAttribute('x', `${x}`);
 
         const piece = fieldObj.get(x, y);
         td.style.backgroundColor = color(piece, y, isHighlight);
@@ -82,7 +82,7 @@ const fieldGenerator = (
         text.style.color = '#999';
         text.style.textAlign = 'center';
         text.style.fontSize = '9px';
-        text.innerText = page.current + ' / ' + page.max;
+        text.innerText = `${page.current} / ${page.max}`;
         div.appendChild(text);
     }
 
@@ -126,7 +126,7 @@ const callbacks = (() => {
 
             tip.loading = true;
             if (url === undefined) {
-                content.innerHTML = `<div>Not found url</div>`;
+                content.innerHTML = '<div>Not found url</div>';
                 tip.loading = false;
                 return;
             }
@@ -378,7 +378,7 @@ const getFromStrage = (key: string) => {
 
     return new Promise<{ key: string, value?: string }>((resolve) => {
         chrome.runtime.sendMessage({ key, action: 'storage' }, (response: Response) => {
-            if (response.code !== 200) throw new ViewError('Failed to get: ' + key);
+            if (response.code !== 200) throw new ViewError(`Failed to get: ${key}`);
             resolve({ key, value: response.value });
         });
     });
