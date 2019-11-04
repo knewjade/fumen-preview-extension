@@ -207,7 +207,9 @@ export async function innerDecode(
             const flatten: string[] = [];
             for (const value of commentValues) {
                 const chars = decodeToCommentChars(value);
-                flatten.push(...chars);
+                for (const char of chars) {
+                    flatten.push(char);
+                }
             }
 
             const commentText = unescape(flatten.slice(0, commentLength).join(''));
