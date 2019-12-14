@@ -2,7 +2,7 @@
 
 It's Google Chrome extension to quickly view [Fumen for tetris](http://harddrop.com/fumentool).
 
-[Download from Chrome Web Store]()https://chrome.google.com/webstore/detail/kkmandajpdmjfibomfokgdjcgmbkipef/)
+[Download from Chrome Web Store](https://chrome.google.com/webstore/detail/kkmandajpdmjfibomfokgdjcgmbkipef/)
 
 ## with [solution-finder](https://github.com/knewjade/solution-finder)
 
