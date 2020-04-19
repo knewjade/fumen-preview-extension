@@ -35,8 +35,9 @@ const fieldGenerator = (
 
     const fieldTd = (x: number, y: number, isHighlight: boolean) => {
         const td: HTMLTableDataCellElement = document.createElement('td');
-        td.setAttribute('width', '16');
-        td.setAttribute('height', y < 22 ? '16' : '8');
+        td.style.width = '16px';
+        td.style.height = y < 22 ? '16px' : '8px';
+        td.style.borderWidth = '0px';
         td.setAttribute('x', `${x}`);
 
         const piece = fieldObj.get(x, y);
