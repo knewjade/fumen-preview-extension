@@ -10,6 +10,7 @@ const load = () => {
                 'harddrop.com/fumen',
                 'punsyuko.com/fumen',
                 '104.236.152.73/fumen',
+                'knewjade.github.io/fumen-for-mobile',
             ];
             element.value = domains.join('\n');
         }
