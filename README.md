@@ -11,7 +11,7 @@ If you use it, build and load it locally.
 ### Steps for build
 
 1. Clone this repository
-2. `yarn install; yarn run webpack:prod`
+2. Run `yarn install; yarn run webpack:prod` on the project root
 3. Load a directory from Chrome extensions: please see step 2 of https://support.google.com/chrome/a/answer/2714278
 
 ---
