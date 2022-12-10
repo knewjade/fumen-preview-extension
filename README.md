@@ -3,18 +3,8 @@
 It's Google Chrome extension to quickly view [Fumen for tetris](http://harddrop.com/fumentool).
 
 If you use it, build and load it locally.
+https://github.com/knewjade/fumen-preview-extension/releases/tag/v1.2.6
 
-### Required for build
-* Node.js
-* yarn
-
-### Steps for build
-
-1. Clone this repository
-2. Run `yarn install; yarn run webpack:prod` on the project root
-3. Load a directory from Chrome extensions: please see step 2 of https://support.google.com/chrome/a/answer/2714278
-
----
 ---
 
 ## with [solution-finder](https://github.com/knewjade/solution-finder)
@@ -34,6 +24,20 @@ If you use it, build and load it locally.
 ## on [テトリステンプレ集＠テト譜](https://www65.atwiki.jp/tetrismaps/)
 
 ![example4](./images/video4.gif)
+
+---
+
+## How to build your own
+
+### Required for build
+* Node.js
+* yarn
+
+### Steps for build
+
+1. Clone this repository
+2. Run `yarn install; yarn run webpack:prod` on the project root
+3. Load a directory from Chrome extensions: please see step 2 of https://support.google.com/chrome/a/answer/2714278
 
 ## Contact
 
